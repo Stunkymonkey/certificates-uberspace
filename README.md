@@ -7,7 +7,7 @@ you have to be registered and authored at <http://www.startssl.com/>
 
 before doing anything at the startssl-website start this script:
 
-`sh cert-create.sh`
+`./cert-create.sh`
 
 this will ask you some questions:
 
@@ -64,11 +64,11 @@ when startssl gives you your certificate you have to enter it into your ./test.y
 
 enter here your certificate and then run:
 
-`sh cert-add-to-uber.sh`
+`./cert-add-to-uber.sh`
 
 they will ask you again your information:
 ```
-sh cert-add-to-uber.sh 
+./cert-add-to-uber.sh 
 Domain (with ending) : your-domain.de
 Subdomain (ie. mail, www): test
 True
