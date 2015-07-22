@@ -66,7 +66,6 @@ fi
 FOLDER=${HOST}"."${DOMAIN}
 mkdir $FOLDER
 
-COMMONNAME=${HOST}${DOMAIN}
 KEYBITS=4096
 
 SANAMES=""
@@ -100,7 +99,7 @@ fi
 cat <<EOF >> $CONFIG
  [ req_distinguished_name ]
  commonName              = Common Name (eg, YOUR name)
- commonName_default      = $COMMONNAME
+ commonName_default      = ${HOST}.${DOMAIN}
  commonName_max          = 64
  [ v3_req ]
 EOF
