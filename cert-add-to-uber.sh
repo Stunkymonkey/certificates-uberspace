@@ -28,7 +28,7 @@ if [[ "${MAIL/$FINE}" = "$MAIL" ]]; then
    echo -e "$MAIL"
    # mail it to uberspace
    echo -e "$MAIL" | mail -s "Please add the certificates" hallo@uberspace.de
-   echo "Mail was send to hallo@uberspace.de" 
+   echo "Mail was sent to hallo@uberspace.de" 
 else
    echo "Unknown Error:"
    echo
