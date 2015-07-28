@@ -62,7 +62,7 @@ FQDN="${SUBDOMAIN}.${DOMAIN}"
 CSR="./certs/$FQDN/${SUBDOMAIN}_csr.pem"
 KEY="./certs/$FQDN/${SUBDOMAIN}_privatekey.pem"
 CRT="./certs/$FQDN/${SUBDOMAIN}_startssl.pem"
-mkdir -p $FQDN
+mkdir -p "./certs/$FQDN"
 
 # Config File Generation
 cat <<EOF > $CONFIG
