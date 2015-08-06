@@ -103,7 +103,7 @@ rm $CONFIG
 umask $LASTUMASK
 
 # check with uber script
-uberspace-prepare-certificate -c $CRT -k $KEY -i 
+uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL
 
 if [ ! $? -eq 0 ]; then
 	uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL | \
