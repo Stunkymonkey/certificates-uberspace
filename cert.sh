@@ -27,29 +27,23 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+KEYBITS=4096
+UBERMAIL="hallo@uberspace.de"
+STARTSSL="./sub.class1.server.ca.pem"
 
+PWD=$(pwd)
 # be safe about permissions
-LASTUMASK=`umask`
+LASTUMASK=$(umask)
 umask 077
 
-# OpenSSL for HPUX needs a random file
-RANDOMFILE=$HOME/.rnd
-
 # create a config file for openssl
-CONFIG=`mktemp -q /tmp/openssl-conf.XXXXXXXX`
+CONFIG=$(mktemp -q /tmp/openssl-conf.XXXXXXXX)
 if [ ! $? -eq 0 ]; then
     echo "Could not create temporary config file. exiting"
     exit 1
 fi
 
-echo "Private Key and Certificate Signing Request Generator"
-# echo "This script was designed to suit the request format needed by"
-echo "the CAcert Certificate Authority. www.Startssl.com"
-echo
-
-PWD=$(pwd)
-
-printf "Domain (with ending) : "
+printf "Domain (the ending): "
 read DOMAIN
 if [ -z "$DOMAIN" ]; then
    echo "No Domain entered. Exiting..."
@@ -57,72 +51,67 @@ if [ -z "$DOMAIN" ]; then
 fi
 
 printf "Subdomain (ie. mail, www): "
-read HOST
-if [ -z "$HOST" ]; then
+read SUBDOMAIN
+if [ -z "$SUBDOMAIN" ]; then
    echo "No Subdomain entered. Exiting..."
    exit
 fi
 
-FOLDER=${HOST}"."${DOMAIN}
-mkdir $FOLDER
+FQDN="${SUBDOMAIN}.${DOMAIN}"
 
-KEYBITS=4096
-
-SANAMES=""
+CSR="./certs/$FQDN/${SUBDOMAIN}_csr.pem"
+KEY="./certs/$FQDN/${SUBDOMAIN}_privatekey.pem"
+CRT="./certs/$FQDN/${SUBDOMAIN}_startssl.pem"
+mkdir -p "./certs/$FQDN"
 
 # Config File Generation
-
 cat <<EOF > $CONFIG
 # -------------- BEGIN custom openssl.cnf -----
  HOME                    = $HOME
-EOF
-
-if [ "`uname -s`" = "HP-UX" ]; then
-    echo " RANDFILE                = $RANDOMFILE" >> $CONFIG
-fi
-
-cat <<EOF >> $CONFIG
  oid_section             = new_oids
  [ new_oids ]
  [ req ]
  default_days            = 730            # how long to certify for
- default_keyfile         = ./$FOLDER/${HOST}_privatekey.pem
+ default_keyfile         = $KEY
  distinguished_name      = req_distinguished_name
  encrypt_key             = no
  string_mask = nombstr
-EOF
-
-if [ ! "$SANAMES" = "" ]; then
-    echo "req_extensions = v3_req # Extensions to add to certificate request" >> $CONFIG
-fi
-
-cat <<EOF >> $CONFIG
  [ req_distinguished_name ]
  commonName              = Common Name (eg, YOUR name)
- commonName_default      = ${HOST}.${DOMAIN}
+ commonName_default      = $FQDN
  commonName_max          = 64
  [ v3_req ]
+# -------------- END custom openssl.cnf -----
 EOF
 
-if [ ! "$SANAMES" = "" ]; then
-    echo "subjectAltName=$SANAMES" >> $CONFIG
-fi
-
-echo "# -------------- END custom openssl.cnf -----" >> $CONFIG
-
 echo "Running OpenSSL..."
-openssl req -batch -config $CONFIG -sha256 -newkey rsa:$KEYBITS -out ./$FOLDER/${HOST}_csr.pem
+openssl req -batch -config $CONFIG -sha256 -newkey rsa:$KEYBITS -out $CSR
+echo 
 echo "Copy the following Certificate Request and paste into Startssl website to obtain a Certificate."
-echo "When you receive your certificate, you 'should' enter it in the "./$FOLDER/${HOST}_startssl.pem
 echo
-cat ./$FOLDER/${HOST}_csr.pem
+cat $CSR 
 echo
-echo "The Certificate request is also available in ./$FOLDER/${HOST}_csr.pem"
-echo "The Private Key is stored in ./$FOLDER/${HOST}_privatekey.pem"
+echo "        CSR: $CSR"
+echo "Private Key: $KEY"
 echo
-touch ./$FOLDER/${HOST}_startssl.pem
+echo "Please paste your generated certificate here and press Ctrl+D after finishing:"
+echo
+cat > $CRT 
 
 rm $CONFIG
-
 #restore umask
 umask $LASTUMASK
+
+# check with uber script
+uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL
+
+if [ $? -eq 0 ]; then
+	uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL | \
+		mail -s "Please add the certificates" $UBERMAIL && \
+		echo "Mail was sent to $UBERMAIL" 
+else
+	echo "Unknown Error:"
+	echo "Test it with this command below:"
+	echo "uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL"
+	exit 1
+fi
