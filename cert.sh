@@ -106,9 +106,7 @@ umask $LASTUMASK
 uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL
 
 if [ $? -eq 0 ]; then
-	uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL | \
-		mail -s "Please add the certificates" $UBERMAIL && \
-		echo "Mail was sent to $UBERMAIL" 
+	echo "Everything is fine!"
 else
 	echo "Unknown Error:"
 	echo "Test it with this command below:"
