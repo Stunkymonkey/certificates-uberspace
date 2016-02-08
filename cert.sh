@@ -29,7 +29,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 KEYBITS=4096
 UBERMAIL="hallo@uberspace.de"
-STARTSSL="./sub.class1.server.ca.pem"
 
 PWD=$(pwd)
 # be safe about permissions
@@ -103,13 +102,13 @@ rm $CONFIG
 umask $LASTUMASK
 
 # check with uber script
-uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL
+uberspace-prepare-certificate -c $CRT -k $KEY
 
 if [ $? -eq 0 ]; then
-	echo "Everything is fine!"
+	echo "Everything is fine! Your certificate will become active within the next 5 minutes."
 else
 	echo "Unknown Error:"
 	echo "Test it with this command below:"
-	echo "uberspace-prepare-certificate -c $CRT -k $KEY -i $STARTSSL"
+	echo "uberspace-prepare-certificate -c $CRT -k $KEY"
 	exit 1
 fi
